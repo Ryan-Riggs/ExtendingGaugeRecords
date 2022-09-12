@@ -1,7 +1,6 @@
 ##Setup GEE variables. 
 import ee 
 ee.Initialize()
-
 sword = ee.FeatureCollection('users/rriggs/AllxSections3')
 records = ee.FeatureCollection('users/rriggs/grdc_gee1')
 grdc = ee.FeatureCollection('users/rriggs/RC/validQ_1984')#'users/rriggs/RC/LocationsGaugesGRWLfiltV3')
