@@ -12,8 +12,8 @@ library(data.table)
 library(dplyr)
 library(BBmisc)
 ################################################################################
-shp = st_read("E:\\research\\GlobalGaugeData\\Stations\\allUpdated_endYear.shp")
-rm = fread("E:\\research\\RatingCurveAnalysis\\stats\\removeTheseV5.csv")
+shp = st_read("path\\to\\allUpdated_endYear.shp")
+rm = fread("path\\to\\redundant\\removeTheseV5.csv")
 '%!in%' <- function(x,y)!('%in%'(x,y))
 shp = shp[shp$Sttn_Nm%!in%rm$Sttn_Nm,]
 shp = shp[!is.na(shp$year),]
@@ -85,7 +85,7 @@ rm(all)
 ################################################################################
 ##Functions to open and read in gauge records. 
 ################################################################################
-path = "E:\\research\\GlobalGaugeData\\combined\\"
+path = "path\\to\\gauge\\data\\"
 files = list.files(path, full.names=TRUE)
 
 ##Read in all gage records to a list. 
