@@ -1,3 +1,5 @@
+##Author: Ryan Riggs
+##Date: 9/12/2022
 ##Set up GEE variables
 import ee 
 ee.Initialize()
