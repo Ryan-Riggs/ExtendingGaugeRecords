@@ -1,21 +1,18 @@
+##Setup GEE variables. 
 import ee 
 ee.Initialize()
-#from ee_plugin import Map 
 
 sword = ee.FeatureCollection('users/rriggs/AllxSections3')
 records = ee.FeatureCollection('users/rriggs/grdc_gee1')
-#grdc = ee.FeatureCollection('users/rriggs/GSIM_plus_India')
 grdc = ee.FeatureCollection('users/rriggs/RC/validQ_1984')#'users/rriggs/RC/LocationsGaugesGRWLfiltV3')
 grwl_cline = ee.FeatureCollection('users/eeProject/GRWL_summaryStats')
-# def extraFunction(ryan):
-#x = require('users/eeProject/RivWidthCloudPaper:functions_Landsat578/functions_waterClassification_Jones2019.js')
-# fls = require('users/eeProject/RivWidthCloudPaper:functions_Landsat578/functions_landsat.js')
-# flsh = require('users/eeProject/RivWidthCloudPaper:rwc_landsat.js')
-# fnsLandsat = require('users/eeProject/RivWidthCloudPaper:functions_Landsat578/functions_landsat.js')
-# lsFun = require('users/eeProject/RivWidthCloudPaper:functions_Landsat578/functions_landsat.js')
-# riverFun = require('users/eeProject/RivWidthCloudPaper:functions_river.js')
 grwl_cline = ee.FeatureCollection('users/eeProject/GRWL_summaryStats')
+##list of gauge ids. 3 shown for example.
+p = ['01046500_USGS',
+'01013500_USGS',
+'01638500_USGS']
 
+##Functions.
 def maximum_no_of_tasks(MaxNActive, waitingPeriod):
 	"""maintain a maximum number of active tasks
 	"""
@@ -42,141 +39,8 @@ def maximum_no_of_tasks(MaxNActive, waitingPeriod):
 				NActive += 1
 	return()
 	
-	
-p = ['01046500_USGS',
-'01013500_USGS',
-'01638500_USGS',
-'01170500_USGS',
-'01161000_USGS',
-'01463500_USGS',
-'01464000_USGS',
-'01335754_USGS',
-'03031500_USGS',
-'03036500_USGS',
-'02163500_USGS',
-'01049500_USGS',
-'01034500_USGS',
-'05133500_USGS',
-'06893000_USGS',
-'06895500_USGS',
-'06805500_USGS',
-'07245000_USGS',
-'08041000_USGS',
-'14238000_USGS',
-'07FA006_HYDAT',
-'4208561_GRDC',
-'08KB003_HYDAT',
-'08MA003_HYDAT',
-'09BA001_HYDAT',
-'09EA003_HYDAT',
-'10CD001_HYDAT',
-'4203210_GRDC',
-'4208360_GRDC',
-'4208477_GRDC',
-'4208821_GRDC',
-'4245950_GRDC',
-'6337515_GRDC',
-'6731020_GRDC',
-'6731907_GRDC',
-'01AG003_HYDAT',
-'04LJ001_HYDAT',
-'07EA005_HYDAT',
-'08AB001_HYDAT',
-'09BC004_HYDAT',
-'10AB001_HYDAT',
-'4205100_GRDC',
-'4208290_GRDC',
-'4208491_GRDC',
-'4209810_GRDC',
-'4214530_GRDC',
-'4244610_GRDC',
-'6140400_GRDC',
-'6140401_GRDC',
-'6731555_GRDC',
-'09CD001_HYDAT',
-'4203250_GRDC',
-'4207860_GRDC',
-'4208452_GRDC',
-'4208630_GRDC',
-'6729450_GRDC',
-'08NE058_HYDAT',
-'4214080_GRDC',
-'4215210_GRDC',
-'6731601_GRDC',
-'4208987_GRDC',
-'07FB001_HYDAT',
-'08JC002_HYDAT',
-'4203520_GRDC',
-'4207180_GRDC',
-'4209550_GRDC',
-'4213820_GRDC',
-'6140300_GRDC',
-'6335301_GRDC',
-'6730100_GRDC',
-'6730330_GRDC',
-'6729455_GRDC',
-'6729465_GRDC',
-'01AK001_HYDAT',
-'4214051_GRDC',
-'4214551_GRDC',
-'4231590_GRDC',
-'05CE001_HYDAT',
-'08KA004_HYDAT',
-'08KA005_HYDAT',
-'4208041_GRDC',
-'4208640_GRDC',
-'4213562_GRDC',
-'6729260_GRDC',
-'6733570_GRDC',
-'08JB003_HYDAT',
-'4207160_GRDC',
-'6729401_GRDC',
-'6729402_GRDC',
-'07TA001_HYDAT',
-'10ED002_HYDAT',
-'10ED003_HYDAT',
-'4208230_GRDC',
-'4208350_GRDC',
-'6233203_GRDC',
-'01AD002_HYDAT',
-'08NE049_HYDAT',
-'09BC001_HYDAT',
-'10AA001_HYDAT',
-'4203500_GRDC',
-'4208275_GRDC',
-'4214560_GRDC',
-'4215200_GRDC',
-'4231200_GRDC',
-'6731910_GRDC',
-'6731920_GRDC',
-'6935051_GRDC',
-'05PE006_HYDAT',
-'05PE011_HYDAT',
-'4244750_GRDC',
-'07KC001_HYDAT',
-'4208450_GRDC',
-'4208971_GRDC',
-'10BE001_HYDAT',
-'10BE009_HYDAT',
-'4203790_GRDC',
-'4208270_GRDC',
-'4208288_GRDC',
-'4214480_GRDC',
-'4214531_GRDC',
-'6729370_GRDC',
-'6729371_GRDC',
-'6730501_GRDC',
-'05PC019_HYDAT',
-'4208455_GRDC',
-'4208457_GRDC',
-'4213210_GRDC',
-'4214450_GRDC',
-'4214555_GRDC',
-'07AA002_HYDAT',
-'05DA009_HYDAT',
-'07GJ001_HYDAT']
 
-#p = ['1134200_grdc','1134650_grdc']
+
 def exportation (gauge, buffer):
 	id = gauge
 	loc = grdc.filter(ee.Filter.eq('Sttn_Nm', id))
