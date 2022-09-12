@@ -174,14 +174,13 @@ rc_function = function(Train, Valid){
 ################################################################################
 ##Read in gauge and cross-section files to make sure there are valid measurements for both.
 ################################################################################
-sites = fread("E:\\research\\GlobalGaugeData\\Stations\\FilteredStationsbyRecord.csv")
-grdc_path = "E:\\research\\GlobalGaugeData\\GRDC\\"
-gages = list.files("E:/research/RatingCurveAnalysis/obs/SWORD/combined")
+sites = fread("path/to/FilteredStationsbyRecord.csv")
+gages = list.files("path/to/crossection/widths/")
 gages = gsub("Gauge__", "", gages)
 Site_number_xsections = gsub("_.*.csv$", "", gages)
-xsection_files = paste0("E:/research/RatingCurveAnalysis/obs/SWORD/combined/","Gauge__", gages)
+xsection_files = paste0("path/to/crossection/widths","Gauge__", gages)
 ##Check to see if they all exist. 
-t = list.files("E:/research/RatingCurveAnalysis/obs/SWORD/combined", full.names= TRUE)
+t = list.files("path/to/crossection/widths/", full.names= TRUE)
 tab = list()
 for(i in 1:length(xsection_files)){
   print(i)
@@ -193,10 +192,10 @@ for(i in 1:length(xsection_files)){
     tab[[i]] = xsection_files[i]
   }}
 xsection_files = unlist(tab)
-grdc_files = gsub("E:/research/RatingCurveAnalysis/obs/SWORD/combined","E:/research/GlobalGaugeData/combined", xsection_files)
+grdc_files = gsub("path/to/crossection/widths","path/to/gauge/data", xsection_files)
 grdc_files = gsub("Gauge__", "", grdc_files)
 
-actualRecords = list.files("E:\\research\\GlobalGaugeData\\combined\\")
+actualRecords = list.files("path/to/gauge/data")
 actualRecords = gsub(".csv", "", actualRecords)
 
 ##Function to apply rating curve functions to each node. 
@@ -228,15 +227,15 @@ outer = function(xsec, gage){
 ##Subset to ones that haven't been ran yet and have records. 
 ################################################################################
  '%!in%' <- function(x,y)!('%in%'(x,y))
-alreadyDone = list.files("E:\\research\\RatingCurveAnalysis\\RatingCurveResultsV6\\")
+alreadyDone = list.files("path\\to\\out\\folder")
 alreadyDone = gsub("Gauge__", "", alreadyDone)
-gageNames = gsub("E:/research/GlobalGaugeData/combined/","",grdc_files)
+gageNames = gsub("path/to/gauge/data/","",grdc_files)
 loc = gageNames%!in%alreadyDone
 Site_number_xsections = Site_number_xsections[loc]
 grdc_files = grdc_files[loc]
 xsection_files = xsection_files[loc]
-actualRecords = list.files("E:\\research\\GlobalGaugeData\\combined\\")
-gageNames = gsub("E:/research/GlobalGaugeData/combined/","",grdc_files)
+actualRecords = list.files("path/to/gauge/data")
+gageNames = gsub("path/to/gauge/data","",grdc_files)
 gageNames = gsub("grdc", "GRDC", gageNames)
 loc = gageNames%in%actualRecords
 Site_number_xsections = Site_number_xsections[loc]
@@ -328,7 +327,7 @@ outDf =foreach(i = 1:length(Site_number_xsections), .combine='rbind')%dopar%{
     output = try(rc_function(Train, Valid))
     if(is.error(output)){next}
     else{
-      agency = gsub("E:/research/RatingCurveAnalysis/obs/SWORD/combined/","",xsection_files[i])
+      agency = gsub("path/to/crosssetional/widths/","",xsection_files[i])
       agency = gsub(".csv", "", agency)
       output$Site_number = Site_number_xsections[i]
       output$node_id = as.numeric(nds[j])
@@ -338,7 +337,7 @@ outDf =foreach(i = 1:length(Site_number_xsections), .combine='rbind')%dopar%{
     }
   }
   out = rbindlist(tab)
-  fwrite(out, paste0("E:\\research\\RatingCurveAnalysis\\RatingCurveResultsV6\\",out$agency[1], ".csv"))
+  fwrite(out, paste0("path\\to\\outfolder\\",out$agency[1], ".csv"))
 }
 
 stopImplicitCluster()
