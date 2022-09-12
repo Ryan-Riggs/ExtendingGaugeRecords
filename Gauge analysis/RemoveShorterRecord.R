@@ -8,7 +8,7 @@ library(dplyr)
 library(tidyr)
 ################################################################################
 '%!in%' <- function(x,y)!('%in%'(x,y))
-new = fread("C:\\Users\\rriggs.AUTH\\downloads\\dist_Sttn_Nm_validQ.csv")
+new = fread("path\\to\\dist_Sttn_Nm_validQ.csv")
 sub = new[new$Sttn_Nm!=new$Redundant_Sttn_Nm]
 fl =unique(sub[,c('Redundant_Sttn_Nm', 'Sttn_Nm')])
 
@@ -44,7 +44,7 @@ fl = fl
 
 
 library(BBmisc)
-path = "E:/research/GlobalGaugeData/combined/"
+path = "path/to/gauge/data/"
 rm = list()
 kp = list()
 for(i in 1:nrow(fl)){
@@ -94,7 +94,7 @@ filtered[filtered%in%keep]
 ryan = data.table(filtered)
 kp = data.table(keep)
 rm = data.table(Sttn_Nm = filtered)
-fwrite(rm, "E:\\research\\RatingCurveAnalysis\\stats\\removeTheseV5.csv")
+fwrite(rm, "path\\out\\removeTheseV5.csv")
 
 
 
