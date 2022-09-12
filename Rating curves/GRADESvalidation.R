@@ -1,6 +1,9 @@
-##1/18/2022
-##Ryan Riggs
+##Author: Ryan Riggs
+##Date: 9/12/2022
 ##comparing RC with GRADES.
+############################################################################################
+##Libraries.
+############################################################################################
 library(sf)
 library(raster)
 library(spatial)
@@ -10,15 +13,14 @@ library(data.table)
 library(dplyr)
 library(ncdf4)
 library(hydroGOF)
-
 #############################################################################################
 ##Assign MERIT to each gage locations. 
 #############################################################################################
 '%!in%' <- function(x,y)!('%in%'(x,y))
-gage_file = st_read("E:\\research\\GlobalGaugeData\\Stations\\validQ_1984.shp")
+gage_file = st_read("path\\to\\validQ_1984.shp")
 gage_stats_vals = gage_file
 gage_stats_vals = distinct(gage_stats_vals, gage_stats_vals$Sttn_Nm, .keep_all=TRUE)
-viable = list.files('E:\\research\\RatingCurveAnalysis\\obs\\SWORD\\Updated\\')
+viable = list.files('path/to/crossection/widths')
 viable = gsub('Gauge__', '', viable)
 viable = gsub('.csv', '', viable)
 viable = gsub('grdc', 'GRDC', viable)
@@ -28,7 +30,7 @@ ms = viable[viable%!in%gage_stats_vals$Sttn_Nm]
 
 
 ##Read in Merit. 
-meritFiles= "E:\\research\\MERIT\\Originals\\"
+meritFiles= "path/to/MERIT/HYDRO/"
 meritFiles = list.files(meritFiles, full.names=TRUE, ".shp")
 meritFiles = meritFiles[grep("riv", meritFiles)]
 meritFiles = meritFiles[!grepl("Copy", meritFiles)]
@@ -47,7 +49,7 @@ tab[[i]] = gage_stats_vals
 }
 all = rbindlist(tab)
 allFilt = all%>%group_by(Sttn_Nm)%>%filter(dist==min(dist, na.rm=TRUE))
-fwrite(allFilt, "E:\\research\\RatingCurveAnalysis\\GRADES\\gageComidSample.csv")
+fwrite(allFilt, "path\\out\\gageComidSample.csv")
 
 
 
@@ -55,7 +57,7 @@ fwrite(allFilt, "E:\\research\\RatingCurveAnalysis\\GRADES\\gageComidSample.csv"
 ##Rating curve results. 
 ##################################################################################
 ##Read in files and filter to max nse value. 
-files = list.files("E:\\research\\RatingCurveAnalysis\\RatingCurveResultsV6wDistance\\", full.names=TRUE)
+files = list.files("path/to/ratingcurveparallelresults/", full.names=TRUE)
 processing = function(i, n, distance, wd){
   x = fread(i)
   x = x[obs>=n&abs(flow)<distance&node_width>=wd]
@@ -85,17 +87,17 @@ stats$node_id = out$node_id
 stats$model = out$model
 out = stats
 out$nse = as.numeric(out$nse)
-rm = fread("E:\\research\\RatingCurveAnalysis\\stats\\removeTheseV5.csv")
+rm = fread("path/to/redundant/removeTheseV5.csv")
 out = out[out$Sttn_Nm%!in%rm$Sttn_Nm,]
 ##########################################################################
 ##GRADES Data. 
 ##########################################################################
 #########################################################################################################################
-allFilt=fread("E:\\research\\RatingCurveAnalysis\\GRADES\\gageComidSample.csv")
+allFilt=fread("path\\out\\gageComidSample.csv")
 allFilt = allFilt[allFilt$Sttn_Nm%in%out$Sttn_Nm,]
 # read in netCDF file:
 ncIn = nc_open("E:\\research\\GRADES\\GRADES_Q_v01_pfaf_07_19790101_20131231.nc")
-ncFiles = list.files("E:\\research\\GRADES\\", full.names=TRUE)
+ncFiles = list.files("path\\to\\GRADES\\", full.names=TRUE)
 ncFiles = ncFiles[grep("v01", ncFiles)]
 idsAll = substr(allFilt$COMID, 1,1)
 allFilt$begin = idsAll
@@ -154,26 +156,19 @@ start = as.Date("1979-01-01")
 grades$Date = start+grades$time
 grades$Q = as.numeric(grades$value)
 grades$COMID = grades$comid
-fwrite(grades, "E:\\research\\RatingCurveAnalysis\\GRADES\\subsetSampleV5_updated.csv")
+fwrite(grades, "path\\out\\subsetSampleV5_updated.csv")
 
 
 ###############################################################################
 ##Join to actual record. 
 ###############################################################################
 library(hydroGOF)
-gagePath = "E:\\research\\GlobalGaugeData\\combined\\"
-grades = fread("E:\\research\\RatingCurveAnalysis\\GRADES\\subsetSampleV5.csv")
-grades1 = fread("E:\\research\\RatingCurveAnalysis\\GRADES\\subsetSampleV5_updated.csv")
+gagePath = "path/to/gauge/data/"
+grades = fread("path\\out\\subsetSampleV5.csv")
+grades1 = fread("path\\out\\subsetSampleV5_updated.csv")
 setkey(grades, COMID)
-allFilt = fread("E:\\research\\RatingCurveAnalysis\\GRADES\\gageComidSample.csv")
+allFilt = fread("path\\out\\gageComidSample.csv")
 allFilt = allFilt[allFilt$Sttn_Nm%in%out$Sttn_Nm,]
-# stats = fread("E:\\research\\RatingCurveAnalysis\\stats\\statsV4.csv")
-# basin_pts = fread("E:\\research\\RatingCurveAnalysis\\stats\\statsV4.csv")
-# basin_pts$aridity = fifelse(basin_pts$aridity=='Arid'|basin_pts$aridity=='Semiarid', 'Arid', 'Humid')
-# stats$aridity = basin_pts$aridity[match(stats$Sttn_Nm, basin_pts$Sttn_Nm)]
-
-
-
 
 source("E:/research/2019_08_30_rivObs/git/src/Error_stats_functions.R")
 validation = function(sim, obs){
@@ -213,6 +208,9 @@ gradesOut = rbindlist(gradesPerformance)
 gradesOut = gradesOut[gradesOut$Sttn_Nm%in%out$Sttn_Nm,]
 stats=out
 
+###########################################################################################################
+##Join to hydrobasins level 3 tp assign aridity. 
+###########################################################################################################
 basins = st_read("E:\\research\\HydroAtlas\\BasinATLAS_v10_shp\\BasinATLAS_v10_lev03.shp")
 st_crs(basins) = crs(gage_stats_vals)
 sf::sf_use_s2(FALSE)
@@ -323,27 +321,8 @@ kge=ggplot(mlt[variable=='kge'])+
 kge
 
 ggpubr::ggarrange(rbias,nrmse, kge, nrow=1, common.legend = TRUE)
-
-##Violin plot
-library(facefuns)
-ggplot(mlt[variable=='kge'&aridity!='Total'])+
-  geom_split_violin(aes(x=aridity,y=value,fill=model))+
-  coord_cartesian(ylim=c(-10,1))+
-  theme_classic()
-
-
-
-ggplot(mlt[variable=='rrmse'])+
-  geom_boxplot(aes(x=aridity,y=value, fill=model))+
-  coord_cartesian(ylim=c(0,1000))
-
-ggplot(mlt[variable=='rrmse'])+
-  geom_density(aes(color=aridity,x=value, lty=model))+
-  coord_cartesian(xlim=c(0,300))
-  facet_wrap(~aridity,scales='free')
-
 #######################################################################
-##Obs per gauges. 
+##Observations per gauges. 
 #######################################################################
 countNA = function(f){
   na = f[is.na(f)|f<=0]
@@ -351,7 +330,7 @@ countNA = function(f){
   return(ct)
 }
 
-path = "E:\\research\\RatingCurveAnalysis\\FilledRecords\\allobs_wFlagsV6\\"
+path = "path\\to\\allobs_wFlagsV6\\"
 files = list.files(path, full.names=TRUE)
 sites = list.files(path)
 
@@ -381,7 +360,7 @@ for(i in 1:length(files)){
   extended[[i]] = lf[lf$Date<mn|lf$Date>mx]
   
   ##GRADES Filled in. 
-  q = fread(paste0('E:\\research\\GlobalGaugeData\\combined\\', sites[i]))
+  q = fread(paste0('path/to/gauge/data/', sites[i]))
   q = q[Date>as.Date('1984-03-01')]
   cd = allFilt[allFilt$Sttn_Nm==gsub('.csv','', sites[i]),]
   cd = cd$COMID
@@ -401,12 +380,12 @@ perc = rbindlist(tab,fill=TRUE)
 #perc = perc[Date<as.Date('2021-08-27')]
 perc$Sttn_Nm = gsub(".csv", "", perc$Sttn_Nm)
 perc$Sttn_Nm = gsub('grdc', 'GRDC',perc$Sttn_Nm)
-gage_file = st_read("E:\\research\\GlobalGaugeData\\Stations\\allUpdated_endYear.shp")
+gage_file = st_read("path\\to\\allUpdated_endYear.shp")
 
 perc$Sttn_Nm = gsub("grdc", "GRDC", perc$Sttn_Nm)
 perc$agency = gage_file$agency[match(perc$Sttn_Nm, gage_file$Sttn_Nm)]
 gage_file = gage_file[!is.na(gage_file$year),]
-rm = fread("E:\\research\\RatingCurveAnalysis\\stats\\removeTheseV5.csv")
+rm = fread("path\\to\\redundant\\removeTheseV5.csv")
 '%!in%' <- function(x,y)!('%in%'(x,y))
 gage_file = gage_file[gage_file$Sttn_Nm%!in%rm$Sttn_Nm,]
 perc$Sttn_Nm = gsub('grdc', 'GRDC',perc$Sttn_Nm)
@@ -482,7 +461,7 @@ p=ggarrange(percPlot,labels=c('a'),legend=NULL)
 p
 cb=ggarrange(p,cb,ncol=1)
 cb
-ggsave("E:\\research\\RatingCurveAnalysis\\Figures\\Draft\\Figure3RD_panel2_updatedAugust.pdf", cb, dpi=1000, 
+ggsave("path\\out\\Figure3b_e.pdf", cb, dpi=1000, 
        width=6.5, height=3.7)
 
 ##3.7
@@ -576,25 +555,6 @@ basin_pts$kge = as.numeric(basin_pts$kge)
 v = -1
 basin_pts$cap = ifelse(basin_pts$kge<=v,-1, basin_pts$kge)
 basin_pts$cap = cut(basin_pts$kge, c(-Inf,-0.41,0,0.41,1))
-mp =ggplot(world)+
-  geom_sf(color="grey90", fill = "grey90")+
-  coord_sf(crs = "+proj=wag5", xlim=c(-180,180))+
-  theme_classic()+
-  theme(axis.title=element_blank(),axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(), axis.line.x = element_blank(),
-        legend.title =element_text(size=12),
-        legend.text=element_text(size=11))+
-  geom_sf(data = basins[!is.na(basins$obs),],aes(fill=obs), size=0.25)+
-  scale_fill_gradient(trans='log10', low='grey89', high='black')+
-  coord_sf(crs = "+proj=wag5")+
-  geom_sf(data=basin_pts,aes(color=cap),size=0.5)+
-  scale_color_gradient2(low='red', high='blue',mid='white',midpoint=-0.41)+
-  #scale_color_brewer(palette='RdYlBu')+
-  coord_sf(crs='+proj=wag5')
-mp
-ggsave("E:\\research\\RatingCurveAnalysis\\Figures\\Draft\\filledBasin_v6_kge_update.png", mp,
-       dpi=1000,units="in",width=18,height=8)
-
 basin_pts$obsCap = ifelse(is.na(basin_pts$obs), 0.1, basin_pts$obs)
 basin_pts$obsCap = cut(basin_pts$obsCap, c(-Inf,10,100,Inf))
 pal=wesanderson::wes_palette('Zissou1')
@@ -618,100 +578,5 @@ mp=ggplot(world)+
   scale_color_distiller(palette='RdYlBu', direction = 1,trans='log10')+
   coord_sf(crs='+proj=wag5')
 mp
-ggsave("E:\\research\\RatingCurveAnalysis\\Figures\\Draft\\obs_point_3.png", mp,
+ggsave("path\\out\\Figure3a.png", mp,
        dpi=1000,units="in",width=18,height=8)
-
-colorBlindness::cvdPlot(mp)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-ggplot(jnd)+geom_line(aes(x=year,y=perc, color=aridity))+
-  theme_classic()+
-  ylab("Record filled in (observations/year)")+
-  coord_cartesian(xlim=c(1984, 2022))+
-  #scale_fill_brewer(palette="Set1")+
-  scale_color_manual(values=pal)+
-  theme(
-    legend.title = element_blank(),
-    legend.position = "top",
-    strip.background = element_blank(),
-    strip.text.x = element_blank(),
-    axis.title=element_text(size=11),
-    axis.text=element_text(size=9),
-    legend.text = element_text(size=9)
-  )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-aggregate(value~variable+model+aridity, median, data=mlt)
-
-qnt = function(f){
-  quantile(f, 0.25)
-}
-aggregate(value~variable+model, qnt, data=mlt)
-
-
-
-##Plot hydrographs:
-rcPath = "E:\\research\\RatingCurveAnalysis\\FilledRecords\\allobsV4\\"
-for(i in 10:15){
-  sub = allFilt[i]
-  print(i)
-  gr = grades[.(allFilt$COMID[i])]
-  file = paste0(gagePath, allFilt$Sttn_Nm[i], ".csv")
-  gage = fread(file)
-  gage$Date = as.Date(gage$Date)
-  gage = gage[!is.na(Q)&Q>0]
-  rc = fread(paste0(rcPath, allFilt$Sttn_Nm[i], '.csv'))
-  rc = rc[!is.na(rc$Q)&rc$Q>0,]
-  combined = merge(gage, gr, by = "Date")
-  rn = range(c(rc$RC, combined$Q.x, combined$Q.y), na.rm = TRUE)
-  # plot(combined$Q.x, combined$Q.y, xlim=c(rn[1], rn[2]),ylim=c(rn[1], rn[2]),
-  #      log="xy", col=alpha('black', 0.1), pch=19, main=allFilt$Sttn_Nm[i])
-  # abline(0,1)
-  # points(rc$Q, rc$RC, col=alpha('red', 0.1), pch=19)
-  plot(gage$Date[order(gage$Date)], gage$Q[order(gage$Date)], type="l")
-  lines(combined$Date, combined$Q.y, col="red")
-  points(rc$Date, rc$RC, col='blue')
-  
-}
-
