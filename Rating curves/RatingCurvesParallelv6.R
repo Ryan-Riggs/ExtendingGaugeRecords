@@ -174,7 +174,6 @@ rc_function = function(Train, Valid){
 ################################################################################
 ##Read in gauge and cross-section files to make sure there are valid measurements for both.
 ################################################################################
-sites = fread("path/to/FilteredStationsbyRecord.csv")
 gages = list.files("path/to/crossection/widths/")
 gages = gsub("Gauge__", "", gages)
 Site_number_xsections = gsub("_.*.csv$", "", gages)
