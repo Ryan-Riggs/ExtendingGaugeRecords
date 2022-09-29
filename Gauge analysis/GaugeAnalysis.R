@@ -16,68 +16,7 @@ shp = st_read("path/to/gauge.shp")
 '%!in%' <- function(x,y)!('%in%'(x,y))
 dt = data.table(Date = seq.Date(as.Date("1700-01-01"), 
                                 as.Date("2022-12-31"),1))
-################################################################################
-##Assign gauges to continents. 
-################################################################################
-library(purrr)
-shp$Station_Num = shp$Statin_Nm
-##list of dataframes of each continent. 
-##split arcitcnet into Europe and Asia. 
-arcticnet = shp[shp$agency=='arcticnet',]
-arcticnet = arcticnet%>%
-  mutate(long = unlist(map(arcticnet$geometry,1)),
-         lat = unlist(map(arcticnet$geometry,2)))
-arc_eu = arcticnet[arcticnet$long<58,]
-arc_as = arcticnet[arcticnet$long>=58,]
-ggplot(data=NULL)+geom_sf(data=arc_eu, col='blue')+
-  geom_sf(data=arc_as, col='red')
-
-##Europe. 
-eu = shp[shp$agency=="GRDC"&substr(shp$Station_Num, 1,1)=="6",]
-eu = bind_rows(eu, shp[shp$agency=="AFD",], shp[shp$Sttn_Nm%in%arc_eu$Sttn_Nm,])
-nrow(eu)/nrow(shp)
-eu$continent = "Europe"
-
-##Asia. 
-as = shp[shp$agency=="GRDC"&substr(shp$Station_Num, 1,1)=="2",]
-as = bind_rows(as, shp[shp$agency=="CHP"|shp$agency=="RID"|shp$Sttn_Nm%in%arc_as$Sttn_Nm|shp$agency=="MLIT"|shp$agency=="IWRIS",])
-nrow(as)/nrow(shp)
-as$continent = "Asia"
-
-##Oceania. 
-au = shp[shp$agency=="GRDC"&substr(shp$Station_Num, 1,1)=="5",]
-au = bind_rows(au, shp[shp$agency=="BOM",])
-nrow(au)/nrow(shp)
-au$continent = "Oceania"
-
-##Africa. 
-af = shp[shp$agency=="GRDC"&substr(shp$Station_Num, 1,1)=="1",]
-nrow(af)/nrow(shp)
-af$continent = "Africa"
-
-##South America.
-sa = shp[shp$agency=="GRDC"&substr(shp$Station_Num, 1,1)=="3",]
-sa = bind_rows(sa, shp[shp$agency=="CCRR"|shp$agency=="ANA",])
-nrow(sa)/nrow(shp)
-sa$continent = "South America"
-
-##North America
-na = shp[shp$agency=="GRDC"&substr(shp$Station_Num, 1,1)=="4",]
-na = bind_rows(na, shp[shp$agency=="USGS"|shp$agency=="HYDAT",])
-nrow(na)/nrow(shp)
-na$continent = "North America"
-continent = bind_rows(na, sa, af, au, as, eu)
-rm(af)
-rm(as)
-rm(au)
-rm(eu)
-rm(na)
-rm(sa)
-rm(files)
-rm(arcticnet)
-rm(arc_as)
-rm(arc_eu)
-rm(all)
+continent = shp
 ################################################################################
 ##Functions to open and read in gauge records. 
 ################################################################################
