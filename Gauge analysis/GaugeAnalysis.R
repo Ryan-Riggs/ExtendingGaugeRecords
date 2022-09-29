@@ -12,11 +12,8 @@ library(data.table)
 library(dplyr)
 library(BBmisc)
 ################################################################################
-shp = st_read("path/to/gauge/file.shp")
+shp = st_read("path/to/gauge.shp")
 '%!in%' <- function(x,y)!('%in%'(x,y))
-shp = shp[shp$Sttn_Nm%!in%rm$Sttn_Nm,]
-shp = shp[!is.na(shp$year),]
-shp = shp%>%distinct(Sttn_Nm, .keep_all = TRUE)
 dt = data.table(Date = seq.Date(as.Date("1700-01-01"), 
                                 as.Date("2022-12-31"),1))
 ################################################################################
