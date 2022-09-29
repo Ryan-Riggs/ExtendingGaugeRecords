@@ -17,13 +17,12 @@ library(randomForest)
 library(hydroGOF)
 
 
-##I changed the spline function, make sure to test it!. 
 names = c("rrmse", "nse", "kge", "nrmse", "rbias", "bias", "rmse", "stde")
 pal = rainbow(8)
 
 sd.p=function(x){sd(na.omit(x))*sqrt((length(na.omit(x))-1)/length(na.omit(x)))}
 
-source("E:/research/2019_08_30_rivObs/git/src/Error_stats_functions.R")
+source("path/to/Error_stats_functions.R")
 
 validation = function(sim, obs){
   sim = as.numeric(sim)
@@ -247,71 +246,7 @@ actualRecords = gsub(".csv", "", actualRecords)
 
 
 
-random = function(x){
-  x = na.omit(x)
-  v = runif(1000, x-90, x+90)
-  return(v)
-}
 
-fk = function(x, y){
-  y = 0
-  return(as.data.frame(cbind(x, y)))
-}
-
-
-start = as.Date("1979-01-01")
-data_val = Eff_widths
-RC_End = as.Date("2014-12-31") ###WAs 2014
-RC_year = format(RC_End, "%Y")
-RC_year_1 = format(RC_End+1, "%Y")
-data_val$ID = data_val$ID
-data_val$ID_2 = data_val$ID
-data_val$calc_mean = data_val$Effective_width
-#data_val$Date = as.character(data_val$Date)
-tab$ID = tab$id
-tab$ID_2 = tab$id
-tab$width_m = data_val$width_m[match(tab$ID, data_val$ID)]
-#tab$change= tab$median
-#tab$change[mapply(is.na, tab$change)] <- 0
-tab$width_m = data$width_m[match(tab$ID_2, data$ID_2)]
-xSecq=as.data.frame(matrix(numeric(), nrow =5, ncol = 11))
-xSecw=as.data.frame(matrix(numeric(), nrow =5, ncol = 11))
-xSecIDcol=grep("V", names(Site_number_xsections))
-mInd = array(5, dimnames = NULL)
-rangedf_1 = as.data.frame(matrix(numeric(), nrow = 1, ncol = 4))
-gage_stats = as.data.frame(matrix(numeric(), nrow =length(Site_number_xsections), ncol = 23))
-gage_stats_GRADES = as.data.frame(matrix(numeric(), nrow =nrow(Site_number_xsections), ncol = 14))
-colnames(gage_stats_GRADES)= c("Site_number", "GRWL_width_m","n_Landsat_obs","R_2", "R", "RMSE", "p_val","Bias", "RRMSE", "avg_std", "change", 'RRMSE_median', "std_Q", "STDE", "mode")
-as.data.frame(gage_stats_GRADES)
-l_vals = as.data.frame(matrix(numeric(), nrow =nrow(Site_number_xsections), ncol = 20))
-Mean_grades = as.vector(nrow(Site_number_xsections))
-u_vals = as.data.frame(matrix(numeric(), nrow =nrow(Site_number_xsections), ncol = 20))
-sd_vals = as.data.frame(matrix(numeric(), nrow =length(Site_number_xsections), ncol = 20))
-sd_vals_1 = as.data.frame(matrix(numeric(), nrow =nrow(Site_number_xsections), ncol = 20))
-width_vals = as.data.frame(matrix(numeric(), nrow =nrow(Site_number_xsections), ncol = 20))
-gage_quants_q = as.data.frame(matrix(numeric(), nrow =nrow(Site_number_xsections), ncol = 100))
-gage_quants_w = as.data.frame(matrix(numeric(), nrow =nrow(Site_number_xsections), ncol = 100))
-colnames(gage_stats)= c("Site_number", "GRWL_width_m","n_Landsat_obs","R_2", "R", "RMSE", "mode","Bias", "RRMSE","avg_std", "change", "RRMSE_median", "std_Q","STDE", "KGE", "NSE", "rBias",
-                        "SDRR", "MRR", "NRMSE", "Q_50", "W_50")
-as.data.frame(gage_stats)
-gage_stats_col1 = as.vector(1)
-gage_stats_col2 = as.vector(1)
-gage_stats_GRADES_col1 = as.vector(1)
-gage_stats_GRADES_col2 = as.vector(1)
-paired_df_vals = as.data.frame(matrix(numeric(), nrow =nrow(Site_number_xsections), ncol = 20))
-rmse = 1
-width_grouping = 30
-percentiles = c(0.05, 0.95)
-training = 0.7
-data_val = as.data.table(data_val)
-setkey(data_val, ID)
-gage_stats = as.data.frame(matrix(numeric(), nrow =50000, ncol = 24))
-colnames(gage_stats)= c("Site_number", "GRWL_width_m","n_Landsat_obs","R_2", "R", "RMSE", "mode","Bias", "RRMSE","avg_std", "change", "std_Q","STDE", "KGE", "NSE", "rBias",
-                        "SDRR", "MRR", "NRMSE", "Q_50", "W_50", "node_id",".geo")
-cols = c("green","yellow", "blue", "red", "black", "brown")
-n = 0
-ryan =list()
-#for(i in 1:length(Site_number_xsections)){
 outer = function(xsec, gage){
   #paired_df = fread(xsection_files[i])
   paired_df = fread(xsec)
@@ -334,16 +269,9 @@ outer = function(xsec, gage){
     paired_df = inner_join(paired_df, usgs_q)
     paired_df$Q = paired_df$q
     paired_df = paired_df[!is.na(paired_df$Q),]
-    #########################################################################################################    
     nodes = unique(paired_df$node_id)
     return(list(paired_df, nodes))
   }}
-
-
-
-#if(length(nodes)==0){next}
-
-
 
 inner = function(paired_df,nodes){      
   #paired_df_1 = paired_df[.(nodes)]
@@ -355,18 +283,7 @@ inner = function(paired_df,nodes){
   Train = paired_df_1[ trainIndex,]
   Valid = paired_df_1[-trainIndex,]
   
-  ##Split by timeline. 
-  # paired_df_1 = paired_df_1[order(paired_df_1$Date),]
-  # index = round(nrow(paired_df_1)*.7)
-  # Train = paired_df_1[1:index,]
-  # Valid = paired_df_1[(index+1):nrow(paired_df_1),]
-  
-  return(list(Train, Valid))
-  # output = try(rc_function(Train, Valid))
-  # output$Site_number = Site_number_xsections[i]
-  # output$node_id = as.numeric(nodes)
-  # finalOutput = output
-  # return(finalOutput)
+
 }  
 
 
